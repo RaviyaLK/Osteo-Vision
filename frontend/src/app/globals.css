@@ -1,0 +1,26 @@
+/* Tailwind CSS configuration (if you're using Tailwind with Next.js) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f4f4f4;
+  --foreground: #333;
+  --primary: #2563eb;
+  --secondary: #10b981;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', Arial, Helvetica, sans-serif;
+}
+
+/* Additional custom styles */
+.btn {
+  @apply px-4 py-2 rounded-md transition;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}

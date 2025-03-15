@@ -1,0 +1,11 @@
+pandas
+numpy
+tensorflow==2.13
+keras
+opencv-python
+matplotlib
+seaborn
+scikit-learn
+scikit-image
+fastapi
+uvicorn

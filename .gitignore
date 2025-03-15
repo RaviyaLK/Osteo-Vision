@@ -1,0 +1,25 @@
+# --- Global ---
+*.log
+.DS_Store
+*.env
+*.env.local
+# Ignore JetBrains IDE files
+.idea/
+
+# --- Python Backend ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.h5
+*.pkl
+*.db
+env/
+venv/
+backend/static/uploads/
+
+# --- Node.js Frontend ---
+node_modules/
+.next/
+out/
+frontend/.env.local
+frontend/.next/
