@@ -23,16 +23,16 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 # 2. Dataset Paths
 # ===============================
 healthy_dirs = [
-   r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/DatasetUltra/Normal'
+   r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/backend/DatasetUltra/Normal'
 ]
 
 osteopenia_dirs = [
-    r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/DatasetUltra/Osteopenia',
-    r"C:\Users\Metropolitan\OneDrive\Desktop\Osteo-Vision\DatasetUltra\New"
+    r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/backend/DatasetUltra/Osteopenia',
+    r"C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/backend/DatasetUltra\New"
 ]
 
 osteoporosis_dirs = [
-   r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/DatasetUltra/Osteoporosis'
+   r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/backend/DatasetUltra/Osteoporosis'
 ]
 
 # ===============================
@@ -178,7 +178,7 @@ plt.show()
 # ===============================
 # 11. Save the Model
 # ===============================
-model.save('Multiclass_Osteoporosis_Model.h5')
+model.save('Multiclass_Osteoporosis_Model_new.h5')
 print("Model saved as Multiclass_Osteoporosis_Model.h5")
 # ===============================
 # 12. Classification Report & Confusion Matrix

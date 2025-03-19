@@ -1,6 +1,6 @@
 pandas
 numpy
-tensorflow==2.13
+tensorflow==2.10
 keras
 opencv-python
 matplotlib
