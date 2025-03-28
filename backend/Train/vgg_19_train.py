@@ -24,8 +24,8 @@ warnings.filterwarnings("ignore")
 annealer = LearningRateScheduler(lambda epoch: 1e-3 * 0.95 ** epoch, verbose=0)
 
 # Data Paths
-healthy_dirs = [r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/DatasetUltra/Normal']
-osteoporosis_dirs = [r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/DatasetUltra/Osteoporosis']
+healthy_dirs = [r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/backend/DatasetUltra/Normal']
+osteoporosis_dirs = [r'C:/Users/Metropolitan/OneDrive/Desktop/Osteo-Vision/backend/DatasetUltra/Osteoporosis']
 # Prepare Dataset
 filepaths = []
 labels = []
@@ -122,7 +122,7 @@ history = model.fit(
 )
 
 # Save Model
-model.save("knee_osteoporosis_model_Anthima_eka.h5")
+model.save("knee_osteoporosis_model_final_final.h5")
 
 # Model Evaluation
 test_loss, test_accuracy = model.evaluate(test, verbose=1)

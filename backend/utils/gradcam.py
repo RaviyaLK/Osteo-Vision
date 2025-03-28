@@ -6,7 +6,7 @@ import tensorflow as tf
 from fastapi import UploadFile
 from PIL import Image
 
-def grad_cam(input_model, img_array, layer_name="block5_conv4"):
+def grad_cam(input_model, img_array, target_size, layer_name):
     grad_model = tf.keras.models.Model(
         inputs=input_model.inputs,
         outputs=[input_model.get_layer(layer_name).output, input_model.output]
@@ -28,11 +28,13 @@ def grad_cam(input_model, img_array, layer_name="block5_conv4"):
     for i, w in enumerate(weights):
         cam += w * conv_outputs[0, :, :, i]
 
-    cam = cv2.resize(cam.numpy(), (224, 224))
+    # Resize Grad-CAM heatmap to match input image size
+    cam = cv2.resize(cam.numpy(), target_size)
     heatmap = np.maximum(cam, 0)
     heatmap /= np.max(heatmap) if np.max(heatmap) > 0 else 1  # Avoid division by zero
 
     return heatmap
+
 
 def overlay_gradcam(img, heatmap):
     # Resize heatmap to match original image size
@@ -55,22 +57,10 @@ def overlay_gradcam(img, heatmap):
     heatmap_color = cv2.applyColorMap(heatmap_resized, cv2.COLORMAP_JET)
     output = cv2.addWeighted(img_with_boxes, 0.6, heatmap_color, 0.4, 0)
 
-    # Find the largest activation region
+    # Draw only the bounding box around the highest activation region
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
         x, y, w, h = cv2.boundingRect(largest_contour)
-
-        # Draw a bounding box around the highest activation
-        cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        # Add text annotation
-        text = "Most Influential Area"
-        text_position = (x, y - 10) if y - 10 > 10 else (x, y + 20)
-        cv2.putText(output, text, text_position, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-        # Draw an arrow pointing to the region
-        arrow_start = (x + w // 2, y + h + 10)
-        arrow_end = (x + w // 2, y + h + 30)
-        cv2.arrowedLine(output, arrow_start, arrow_end, (0, 255, 0), 2)
+        cv2.rectangle(output, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Green box
 
     return output

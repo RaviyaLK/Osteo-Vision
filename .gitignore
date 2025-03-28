@@ -13,10 +13,11 @@ __pycache__/
 *.h5
 *.pkl
 *.db
+.keras
 env/
 venv/
 backend/static/uploads/
-
+backend/model_files/
 # --- Node.js Frontend ---
 node_modules/
 .next/
