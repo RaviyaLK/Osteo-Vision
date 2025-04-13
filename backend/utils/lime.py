@@ -11,6 +11,7 @@ def generate_lime_image(model, img_array, image_resized, model_type="multiclass"
     # Initialize the explainer
     explainer = lime_image.LimeImageExplainer()
 
+
     # Run explanation (reduced num_samples for speed)
     explanation = explainer.explain_instance(
         np.array(image_resized),

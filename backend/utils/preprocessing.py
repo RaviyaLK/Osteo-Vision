@@ -10,16 +10,19 @@ def preprocess_image(image: Image.Image, model_name: str):
         target_size = (224, 224)
         preprocess_func = tf.keras.applications.vgg19.preprocess_input
 
-    # Resize the image to the required model input size
+    # Resize image
     image_resized = image.resize(target_size)
 
     # Convert to NumPy array
     img_array = np.array(image_resized)
 
-    # Expand dimensions to match model input shape
+    # Expand dimensions
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Apply model-specific preprocessing
+    # Preprocess
     img_array = preprocess_func(img_array)
 
-    return img_array, target_size, image_resized
+    # Convert to TensorFlow tensor
+    img_tensor = tf.convert_to_tensor(img_array, dtype=tf.float32)
+
+    return img_tensor, target_size, image_resized

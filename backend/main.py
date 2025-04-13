@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import io
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
@@ -19,6 +20,8 @@ from inference_sdk import InferenceHTTPClient
 from config import ROBOFLOW_API_URL, ROBOFLOW_API_KEY
 from utils.saliency_maps import generate_saliency_map_image
 from utils.shap import generate_shap_image
+import tensorflow as tf
+from concurrent.futures import ThreadPoolExecutor
 
 app = FastAPI()
 
@@ -39,6 +42,22 @@ CLIENT = InferenceHTTPClient(api_url=ROBOFLOW_API_URL, api_key=ROBOFLOW_API_KEY)
 client = MongoClient(MONGO_URL)
 db = client.reportsDB
 reports_collection = db.reports
+
+# Thread pool executor for parallel processing
+executor = ThreadPoolExecutor(max_workers=4)
+
+@tf.function(reduce_retracing=True)
+def predict_tensorflow(model, input_tensor):
+    return model(input_tensor, training=False)
+def run_prediction(model, img_array, is_multiclass=False):
+    prediction = model(img_array, training=False).numpy()
+    if is_multiclass:
+        predicted_class_idx = int(np.argmax(prediction))
+        confidence_score = min(round(float(np.max(prediction)), 2), 0.99)
+    else:
+        predicted_class_idx = int(round(prediction[0][0]))
+        confidence_score = min(round(float(prediction[0][0] if predicted_class_idx == 1 else 1 - prediction[0][0]), 2), 0.99)
+    return predicted_class_idx, confidence_score
 
 class Report(BaseModel):
     patient_id: str
@@ -99,7 +118,6 @@ async def upload_image(file: UploadFile = File(...), model: str = Form("binary_v
         if not image_bytes:
             return JSONResponse(status_code=400, content={"error": "Empty file uploaded"})
 
-        # Knee X-ray check
         is_knee = await is_knee_xray(image_bytes)
         if not is_knee:
             return JSONResponse(status_code=400, content={"error": "Uploaded image is not a knee X-ray"})
@@ -107,23 +125,27 @@ async def upload_image(file: UploadFile = File(...), model: str = Form("binary_v
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         if model == "ensemble":
-            # Load both models
             model_vgg = load_model("binary_vgg19")
             model_eff = load_model("efficientnet")
 
             img_vgg, target_size_vgg, image_resized_vgg = preprocess_image(image, "binary_vgg19")
             img_eff, target_size_eff, image_resized_eff = preprocess_image(image, "efficientnet")
 
-            # Predict using soft voting
-            prob_vgg = model_vgg.predict(img_vgg)[0][0]
-            prob_eff = model_eff.predict(img_eff)[0][0]
+            # Run both predictions in parallel using threads
+            loop = asyncio.get_event_loop()
+            vgg_result, eff_result = await asyncio.gather(
+                loop.run_in_executor(executor, run_prediction, model_vgg, img_vgg, False),
+                loop.run_in_executor(executor, run_prediction, model_eff, img_eff, False)
+            )
+
+            prob_vgg = vgg_result[1]
+            prob_eff = eff_result[1]
             final_prob = 0.6 * prob_vgg + 0.4 * prob_eff
 
             predicted_class_idx = int(final_prob >= 0.5)
             predicted_class = "Healthy" if predicted_class_idx == 1 else "Osteoporosis"
-            confidence_score = min(round(float(final_prob if predicted_class_idx == 1 else 1 - final_prob), 2), 0.99)
+            confidence_score = min(round(final_prob if predicted_class_idx == 1 else 1 - final_prob, 2), 0.99)
 
-            # Grad-CAM + XAI use model_vgg as representative
             model_instance = model_vgg
             img_array = img_vgg
             image_resized = image_resized_vgg
@@ -131,15 +153,16 @@ async def upload_image(file: UploadFile = File(...), model: str = Form("binary_v
             layer_name = "block5_conv4"
 
         else:
-            # Single model
             model_instance = load_model(model)
             img_array, target_size, image_resized = preprocess_image(image, model)
 
-            prediction = model_instance.predict(img_array)[0]
-            predicted_class_idx = int(np.argmax(prediction)) if model == "multiclass_vgg19" else int(round(prediction[0]))
-            confidence_score = min(round(float(np.max(prediction)), 2), 0.99)
+            is_multiclass = model == "multiclass_vgg19"
+            loop = asyncio.get_event_loop()
+            predicted_class_idx, confidence_score = await loop.run_in_executor(
+                executor, run_prediction, model_instance, img_array, is_multiclass
+            )
 
-            if model == "multiclass_vgg19":
+            if is_multiclass:
                 class_names = ["Healthy", "Osteopenia", "Osteoporosis"]
                 predicted_class = class_names[predicted_class_idx]
             else:
@@ -154,16 +177,13 @@ async def upload_image(file: UploadFile = File(...), model: str = Form("binary_v
         _, buffer = cv2.imencode(".jpg", overlay_img)
         overlay_base64 = base64.b64encode(buffer).decode()
 
-
         lime_image_b64 = generate_lime_image(model_instance, img_array, image_resized, model)
-
 
         return JSONResponse(content={
             "prediction": predicted_class,
             "confidence": confidence_score,
             "gradcam_image": overlay_base64,
             "lime_image": lime_image_b64,
-
         })
 
     except Exception as e:

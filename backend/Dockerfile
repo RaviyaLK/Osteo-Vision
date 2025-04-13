@@ -1,14 +1,12 @@
-FROM python:3.9-slim
+# Use TensorFlow GPU image with Python 3.9 and CUDA/cuDNN pre-installed
+FROM tensorflow/tensorflow:2.18.0-gpu
 
 WORKDIR /app
 
 # Install system dependencies for OpenCV and graphics
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    # OpenCV dependencies
     libgl1-mesa-glx \
     libglib2.0-0 \
-    # Additional dependencies that might be needed
     libsm6 \
     libxext6 \
     libxrender-dev \
@@ -18,15 +16,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Install Python dependencies
+# Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
 COPY . .
 
-# Expose the port that FastAPI will run on
+# Expose the port FastAPI will run on
 EXPOSE 8000
 
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Start the FastAPI app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
