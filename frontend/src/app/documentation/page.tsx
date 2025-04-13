@@ -3,7 +3,7 @@ import { FaArrowCircleRight } from "react-icons/fa";
 
 export default function DocumentationPage() {
   return (
-    <div className="relative min-h-screen bg-gradient-to-r from-blue-500 to-teal-400 p-8 flex items-center justify-center">
+    <div className="relative min-h-screen bg-linear-to-r from-blue-500 to-teal-400 p-8 flex items-center justify-center">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-40"
         style={{ backgroundImage: 'url("/background.jpg")' }}

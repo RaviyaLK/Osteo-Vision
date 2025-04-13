@@ -7,7 +7,7 @@ import Footer from "@/components/footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Medical Diagnostic Platform",
+  title: "Osteo-Vision",
   description: "Advanced medical diagnostic and analysis platform",
   icons: {
     icon: "/favicon.ico",

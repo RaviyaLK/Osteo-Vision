@@ -9,8 +9,9 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-blue-600 text-white shadow-md">
-      <div className="container mx-auto px-4 lg:px-10 py-7 flex justify-between items-center">
+    <nav className="bg-blue-600 text-white shadow-md fixed w-full top-0 z-50">
+      <div className="container mx-auto px-4 lg:px-6 py-3 flex justify-between items-center">
+
         {/* Logo */}
         <Link
           href="/"
@@ -34,11 +35,12 @@ export default function Navbar() {
           <Link href="/documentation" className="hover:text-blue-200 text-xl">
             Documentation
           </Link>
+          
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-2xl focus:outline-none"
+          className="md:hidden text-2xl focus:outline-hidden"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <AiOutlineClose /> : <AiOutlineMenu />}

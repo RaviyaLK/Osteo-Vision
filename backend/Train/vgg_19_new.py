@@ -67,7 +67,7 @@ def preprocess_data(df):
 
 
 # -----------------------------------
-# 📌 3. Image Augmentation & Data Generators
+# 📌 3. Data Generators
 # -----------------------------------
 def create_generators(train_df, val_df, test_df):
     """

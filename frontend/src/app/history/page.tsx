@@ -6,6 +6,17 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { Spinner } from "react-bootstrap";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function HistoryPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,7 +89,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-r from-blue-500 to-teal-400 p-8 flex items-center justify-center">
+    <div className="relative min-h-screen bg-linear-to-r from-blue-500 to-teal-400 p-8 flex items-center justify-center">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-40"
         style={{ backgroundImage: 'url("/background.jpg")' }}
@@ -89,12 +100,32 @@ export default function HistoryPage() {
           <h1 className="text-3xl font-extrabold text-gray-800">
             Medical History
           </h1>
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-all duration-200"
-            onClick={clearDatabase}
-          >
-            Clear All Reports
-          </button>
+         <AlertDialog>
+  <AlertDialogTrigger asChild>
+    <button
+      className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-all duration-200"
+    >
+      Clear All Reports
+    </button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+      <AlertDialogDescription>
+        This action cannot be undone. This will permanently delete all medical reports from the database.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction
+        className="bg-red-600 hover:bg-red-700"
+        onClick={clearDatabase}
+      >
+        Continue
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
         </div>
 
         <p className="mb-6 text-gray-600">
