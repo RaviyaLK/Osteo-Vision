@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { useState, useEffect } from "react";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
@@ -33,6 +33,7 @@ export default function HistoryPage() {
       })
       .catch((error) => {
         console.error("Error fetching reports:", error);
+        toast.error("Failed to load medical history");
         setLoading(false);
       });
   }, []);
@@ -57,6 +58,7 @@ export default function HistoryPage() {
         link.click();
         link.remove();
         setLoadingReportId(null);
+        toast.success("Report downloaded successfully!");
       })
       .catch((error) => {
         console.error("Download error:", error);
@@ -89,118 +91,131 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-linear-to-r from-blue-500 to-teal-400 p-8 flex items-center justify-center">
+    <div className="pt-[60px]">
+     <div className="relative min-h-screen bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center p-6">
+      {/* Background image */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-40"
+        className="absolute inset-0 bg-cover bg-center opacity-20 z-0"
         style={{ backgroundImage: 'url("/background.jpg")' }}
-      ></div>
+      />
 
-      <div className="relative z-10 container mx-auto p-8 bg-white shadow-xl rounded-lg max-w-4xl max-h-[1000px] ">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-extrabold text-gray-800">
-            Medical History
-          </h1>
-         <AlertDialog>
-  <AlertDialogTrigger asChild>
-    <button
-      className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-all duration-200"
-    >
-      Clear All Reports
-    </button>
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-      <AlertDialogDescription>
-        This action cannot be undone. This will permanently delete all medical reports from the database.
-      </AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction
-        className="bg-red-600 hover:bg-red-700"
-        onClick={clearDatabase}
-      >
-        Continue
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
-        </div>
+<div className="relative z-10 bg-white rounded-2xl shadow-2xl p-10 w-full max-w-6xl">
+        {/* Main Card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 md:p-8 space-y-6">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Medical History</h1>
+                <p className="text-gray-600 mt-1">Your previous diagnoses and reports</p>
+              </div>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+                    <FiTrash2 className="h-4 w-4" />
+                    Clear All Reports
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Clear History</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all medical reports from the database. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-red-600 hover:bg-red-700"
+                      onClick={clearDatabase}
+                    >
+                      Clear History
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
 
-        <p className="mb-6 text-gray-600">
-          Your medical history and previous diagnoses are shown here.
-        </p>
-
-        <div className="max-h-[800px] overflow-y-auto border-t border-b border-gray-200">
-          {loading ? (
-            <p className="text-gray-500">Loading reports...</p>
-          ) : reports.length === 0 ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="p-10 rounded-lg text-center w-full max-w-md">
-                <div className="mb-5">
+            {/* Reports List */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {loading ? (
+                <div className="flex justify-center items-center py-20">
+                  <div className="flex flex-col items-center gap-4">
+                    <Spinner animation="border" variant="primary" />
+                    <p className="text-gray-600">Loading medical history...</p>
+                  </div>
+                </div>
+              ) : reports.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                   <img
                     src="/not_found.png"
                     alt="No reports"
-                    className="mx-auto w-24 h-24 object-contain"
+                    className="w-32 h-32 object-contain mb-4 opacity-70"
                   />
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">No Reports Found</h3>
+                  <p className="text-gray-600 max-w-md">
+                    Your medical history will appear here after you generate and save reports.
+                  </p>
                 </div>
-                <p className="text-gray-600 text-xl mb-4">No reports found.</p>
-                <p className="text-md text-gray-500">
-                  Looks like you haven&apos;t uploaded any reports yet.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <ul className="space-y-6 p-4">
-              {reports.map((report) => (
-                <li
-                  key={report._id}
-                  className="bg-gray-50 p-6 shadow-md rounded-lg flex items-center justify-between transition-all hover:shadow-xl"
-                >
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-800">
-                      {report.patient_name}
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      <strong>Model Used:</strong> {report.model_used}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Prediction:</strong> {report.prediction} (
-                      {(report.confidence_score * 100).toFixed(2)}%)
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Generated on:</strong>{" "}
-                      {new Date(report.generated_on).toLocaleString()}
-                    </p>
-                  </div>
+              ) : (
+                <ul className="divide-y divide-gray-200 max-h-[600px] overflow-y-auto">
+                  {reports.map((report) => (
+                    <li key={report._id} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-800 truncate">
+                              {report.patient_name}
+                            </h3>
+                            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                              {report.model_used.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                            <div>
+                              <span className="font-medium">Prediction:</span> {report.prediction}
+                            </div>
+                            <div>
+                              <span className="font-medium">Confidence:</span> {(report.confidence_score * 100).toFixed(2)}%
+                            </div>
+                            <div className="md:col-span-2">
+                              <span className="font-medium">Generated:</span> {new Date(report.generated_on).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
 
-                  <button
-                    className={`bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition-all duration-300 relative ${
-                      loadingReportId === report._id ? "cursor-wait" : ""
-                    }`}
-                    onClick={() =>
-                      downloadReport(report._id, report.patient_name)
-                    }
-                    disabled={loadingReportId === report._id}
-                  >
-                    {loadingReportId === report._id ? (
-                      <Spinner
-                        animation="border"
-                        size="sm"
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                      />
-                    ) : (
-                      <FiDownload size={20} />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+                        <button
+                          onClick={() => downloadReport(report._id, report.patient_name)}
+                          disabled={loadingReportId === report._id}
+                          className={`p-3 rounded-full text-white transition-colors ${
+                            loadingReportId === report._id 
+                              ? "bg-blue-400 cursor-wait" 
+                              : "bg-blue-600 hover:bg-blue-700"
+                          }`}
+                        >
+                          {loadingReportId === report._id ? (
+                            <Spinner animation="border" size="sm" className="text-white" />
+                          ) : (
+                            <FiDownload className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-      <ToastContainer />
+
+      {/* Toast Notifications */}
+      <ToastContainer 
+    
+      />
+    </div>
     </div>
   );
 }
