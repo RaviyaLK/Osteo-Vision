@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { FaClinicMedical, FaChartLine, FaShieldAlt } from "react-icons/fa";
+import { FaClinicMedical, FaChartLine} from "react-icons/fa";
 import { motion } from "framer-motion";
 
 export default function HomePage() {
@@ -59,7 +59,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2">
           
             <motion.div 
               whileHover={{ y: -10 }}
@@ -70,7 +70,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Clinical Accuracy</h3>
               <p className="text-gray-600">
-                95% accuracy in detecting early signs of osteoporosis from knee X-rays
+               More than 95% accuracy in detecting early signs of osteoporosis from knee X-rays
               </p>
             </motion.div>
 
@@ -89,18 +89,7 @@ export default function HomePage() {
             </motion.div>
 
            
-            <motion.div 
-              whileHover={{ y: -10 }}
-              className="bg-blue-50 p-8 rounded-xl shadow-md"
-            >
-              <div className="flex items-center justify-center h-12 w-12 rounded-md bg-blue-600 text-white mb-4">
-                <FaShieldAlt className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Secure Platform</h3>
-              <p className="text-gray-600">
-                HIPAA-compliant data handling with end-to-end encryption
-              </p>
-            </motion.div>
+           
 
            
           </div>

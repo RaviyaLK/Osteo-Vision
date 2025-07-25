@@ -19,7 +19,7 @@ export default function DocumentationPage() {
             {/* Header */}
             <div className="text-center">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                OsteoVision System Guide
+                Osteo-Vision System Guide
               </h1>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
                 Comprehensive guide to using Osteo-Vision knee osteoporosis detection platform.    

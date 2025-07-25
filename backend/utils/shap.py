@@ -4,13 +4,13 @@ import cv2
 import base64
 
 def generate_shap_image(model, img_array, image_resized):
-    # SHAP expects a background dataset; using dummy 10-sample array from the same input if available
+
     background = img_array[:10] if len(img_array) >= 10 else np.tile(img_array, (10, 1, 1, 1))
 
     explainer = shap.GradientExplainer(model, background)
     shap_values = explainer.shap_values(img_array)
 
-    # For multiclass, pick the predicted class index
+
     predicted_index = np.argmax(model.predict(img_array))
     shap_image = shap_values[predicted_index][0]
 

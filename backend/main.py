@@ -11,15 +11,13 @@ import cv2
 import numpy as np
 from PIL import Image
 from fastapi.middleware.cors import CORSMiddleware
-from config import MONGO_URL
+from config import MONGO_URL, MODEL_NAME
 from models.model_loader import load_model
 from utils.gradcam import grad_cam, overlay_gradcam
 from utils.lime import generate_lime_image
 from utils.preprocessing import preprocess_image
 from inference_sdk import InferenceHTTPClient
 from config import ROBOFLOW_API_URL, ROBOFLOW_API_KEY
-from utils.saliency_maps import generate_saliency_map_image
-from utils.shap import generate_shap_image
 import tensorflow as tf
 from concurrent.futures import ThreadPoolExecutor
 
@@ -56,7 +54,7 @@ def run_prediction(model, img_array, is_multiclass=False):
         confidence_score = min(round(float(np.max(prediction)), 2), 0.99)
     else:
         predicted_class_idx = int(round(prediction[0][0]))
-        confidence_score = min(round(float(prediction[0][0] if predicted_class_idx == 1 else 1 - prediction[0][0]), 2), 0.99)
+        confidence_score =round(float(prediction[0][0] if predicted_class_idx == 1 else 1 - prediction[0][0]), 2)
     return predicted_class_idx, confidence_score
 
 class Report(BaseModel):
@@ -111,83 +109,6 @@ async def download_report(report_id: str):
         "Content-Disposition": f"attachment; filename={report['patient_name']}_report.pdf"
     })
 
-# @app.post("/upload/")
-# async def upload_image(file: UploadFile = File(...), model: str = Form("binary_vgg19")):
-#     try:
-#         image_bytes = await file.read()
-#         if not image_bytes:
-#             return JSONResponse(status_code=400, content={"error": "Empty file uploaded"})
-#
-#         is_knee = await is_knee_xray(image_bytes)
-#         if not is_knee:
-#             return JSONResponse(status_code=400, content={"error": "Uploaded image is not a knee X-ray"})
-#
-#         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-#
-#         if model == "ensemble":
-#             model_vgg = load_model("binary_vgg19")
-#             model_eff = load_model("efficientnet")
-#
-#             img_vgg, target_size_vgg, image_resized_vgg = preprocess_image(image, "binary_vgg19")
-#             img_eff, target_size_eff, image_resized_eff = preprocess_image(image, "efficientnet")
-#
-#             # Run both predictions in parallel using threads
-#             loop = asyncio.get_event_loop()
-#             vgg_result, eff_result = await asyncio.gather(
-#                 loop.run_in_executor(executor, run_prediction, model_vgg, img_vgg, False),
-#                 loop.run_in_executor(executor, run_prediction, model_eff, img_eff, False)
-#             )
-#
-#             prob_vgg = vgg_result[1]
-#             prob_eff = eff_result[1]
-#             final_prob = 0.6 * prob_vgg + 0.4 * prob_eff
-#
-#             predicted_class_idx = int(final_prob >= 0.5)
-#             predicted_class = "Healthy" if predicted_class_idx == 1 else "Osteoporosis"
-#             confidence_score = min(round(final_prob if predicted_class_idx == 1 else 1 - final_prob, 2), 0.99)
-#
-#             model_instance = model_vgg
-#             img_array = img_vgg
-#             image_resized = image_resized_vgg
-#             target_size = target_size_vgg
-#             layer_name = "block5_conv4"
-#
-#         else:
-#             model_instance = load_model(model)
-#             img_array, target_size, image_resized = preprocess_image(image, model)
-#
-#             is_multiclass = model == "multiclass_vgg19"
-#             loop = asyncio.get_event_loop()
-#             predicted_class_idx, confidence_score = await loop.run_in_executor(
-#                 executor, run_prediction, model_instance, img_array, is_multiclass
-#             )
-#
-#             if is_multiclass:
-#                 class_names = ["Healthy", "Osteopenia", "Osteoporosis"]
-#                 predicted_class = class_names[predicted_class_idx]
-#             else:
-#                 predicted_class = "Healthy" if predicted_class_idx == 1 else "Osteoporosis"
-#
-#             layer_name = "top_conv" if model == "efficientnet" else "block5_conv4"
-#
-#         # Grad-CAM
-#         img_bgr = cv2.cvtColor(np.array(image_resized), cv2.COLOR_RGB2BGR)
-#         heatmap = grad_cam(model_instance, img_array, target_size, layer_name)
-#         overlay_img = overlay_gradcam(img_bgr, heatmap)
-#         _, buffer = cv2.imencode(".jpg", overlay_img)
-#         overlay_base64 = base64.b64encode(buffer).decode()
-#
-#         lime_image_b64 = generate_lime_image(model_instance, img_array, image_resized, model)
-#
-#         return JSONResponse(content={
-#             "prediction": predicted_class,
-#             "confidence": confidence_score,
-#             "gradcam_image": overlay_base64,
-#             "lime_image": lime_image_b64,
-#         })
-#
-#     except Exception as e:
-#         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.post("/predict/")
 async def predict_only(file: UploadFile = File(...), model: str = Form("binary_vgg19")):
@@ -206,8 +127,8 @@ async def predict_only(file: UploadFile = File(...), model: str = Form("binary_v
             model_vgg = load_model("binary_vgg19")
             model_eff = load_model("efficientnet")
 
-            img_vgg, _, _ = preprocess_image(image, "binary_vgg19")
-            img_eff, _, _ = preprocess_image(image, "efficientnet")
+            img_vgg, target_size_vgg, image_resized_vgg = preprocess_image(image, "binary_vgg19")
+            img_eff, target_size_eff, image_resized_eff = preprocess_image(image, "efficientnet")
 
             loop = asyncio.get_event_loop()
             vgg_result, eff_result = await asyncio.gather(
@@ -215,13 +136,15 @@ async def predict_only(file: UploadFile = File(...), model: str = Form("binary_v
                 loop.run_in_executor(executor, run_prediction, model_eff, img_eff, False)
             )
 
-            prob_vgg = vgg_result[1]
-            prob_eff = eff_result[1]
-            final_prob = 0.6 * prob_vgg + 0.4 * prob_eff
+            vgg_class_idx, vgg_confidence = vgg_result
+            eff_class_idx, eff_confidence = eff_result
+            vgg_prob = vgg_confidence if vgg_class_idx == 1 else 1 - vgg_confidence
+            eff_prob = eff_confidence if eff_class_idx == 1 else 1 - eff_confidence
+            final_prob = 0.6 * vgg_prob + 0.4 * eff_prob
 
             predicted_class_idx = int(final_prob >= 0.5)
             predicted_class = "Healthy" if predicted_class_idx == 1 else "Osteoporosis"
-            confidence_score = min(round(final_prob if predicted_class_idx == 1 else 1 - final_prob, 2), 0.99)
+            confidence_score = round(final_prob if predicted_class_idx == 1 else 1 - final_prob, 2)
 
         else:
             model_instance = load_model(model)
@@ -299,7 +222,7 @@ async def clear_reports():
 async def is_knee_xray(image_bytes: bytes) -> bool:
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        result = CLIENT.infer(image, model_id="knee-detector/1")
+        result = CLIENT.infer(image, model_id=MODEL_NAME)
         return bool(result['predictions'])
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error detecting knee X-ray: {str(e)}")

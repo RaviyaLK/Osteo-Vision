@@ -6,6 +6,10 @@ This project is developed as part of my **Final Year Project** for the **BSc (Ho
 
 The aim of this project is to build a **Deep Learning-based Web Application** for detecting **knee osteoporosis** from **X-ray images**, with enhanced **explainability using Grad-CAM (Gradient-weighted Class Activation Mapping)**. This system empowers medical professionals by providing **automated diagnosis assistance** and **visual explanations**, improving trust and transparency in AI-driven medical decisions.
 
+## 🌐 Frontend
+![Frontend Screenshot Placeholder](screenshots/1.png)
+![Frontend Screenshot Placeholder](screenshots/2.png)
+
 ## ⚙️ Key Features
 - Upload X-ray images for instant osteoporosis predictions.
 - Choose between multiple pre-trained CNN models (e.g., VGG19, EfficientNet, Ensemble model).
